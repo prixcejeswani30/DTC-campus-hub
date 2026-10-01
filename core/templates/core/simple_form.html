@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block content %}<section class="auth"><div class="authcard wide"><span class="eyebrow">ADMIN / COMMUNITY TOOL</span><h1>{{ title }}</h1><form method="post" enctype="multipart/form-data">{% csrf_token %}{% for f in form %}<label>{{ f.label }}{{ f }}{{ f.errors }}</label>{% endfor %}<button class="btn">Save</button></form></div></section>{% endblock %}
