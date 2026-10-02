@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import authenticate
+from cloudinary.forms import CloudinaryFileField
 from .models import User, NewsPost, Event, AcademicResource, MediaItem
 
 class SignupForm(forms.ModelForm):
@@ -20,9 +21,11 @@ class LoginForm(forms.Form):
         return c
 
 class NewsForm(forms.ModelForm):
+    image=CloudinaryFileField(options={'tags':'dtc_news','quality':'auto','fetch_format':'auto','width':1600,'height':1000,'crop':'limit'})
     class Meta: model=NewsPost; fields=['title','excerpt','content','image','organization','featured']
 
 class EventForm(forms.ModelForm):
+    poster=CloudinaryFileField(options={'tags':'dtc_events','quality':'auto','fetch_format':'auto','width':1600,'height':1200,'crop':'limit'})
     class Meta: model=Event; fields=['title','description','poster','organizer','venue','starts_at','ends_at','registration_url','registration_deadline','status','capacity']
     widgets={
         'starts_at':forms.DateTimeInput(attrs={'type':'datetime-local'}),
@@ -34,4 +37,5 @@ class AcademicForm(forms.ModelForm):
     class Meta: model=AcademicResource; fields=['title','university','course','branch','semester','resource_type','description','file','external_url']
 
 class MediaForm(forms.ModelForm):
+    image=CloudinaryFileField(options={'tags':'dtc_gallery','quality':'auto','fetch_format':'auto','width':1800,'height':1200,'crop':'limit'})
     class Meta: model=MediaItem; fields=['title','image','video_url','caption']
