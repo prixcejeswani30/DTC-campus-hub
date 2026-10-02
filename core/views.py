@@ -29,7 +29,10 @@ def signup(request):
         u=form.save(); login(request,u); messages.success(request,'Welcome to DTC Campus Hub!'); return redirect('dashboard')
     return render(request,'registration/signup.html',{'form':form})
 
-def logout_view(request): logout(request); return redirect('home')
+def logout_view(request):
+    if request.method == 'POST':
+        logout(request)
+    return redirect('home')
 
 @login_required
 def dashboard(request):
