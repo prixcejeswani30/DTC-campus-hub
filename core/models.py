@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 
 class User(AbstractUser):
     class Roles(models.TextChoices):
@@ -15,7 +16,7 @@ class User(AbstractUser):
     course = models.CharField(max_length=120, blank=True)
     branch = models.CharField(max_length=120, blank=True)
     semester = models.PositiveIntegerField(null=True, blank=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar = CloudinaryField('avatar', blank=True, null=True, asset_folder='dtc-campus-hub/avatars')
     bio = models.TextField(blank=True)
     notifications_enabled = models.BooleanField(default=True)
 
@@ -29,8 +30,8 @@ class Organization(models.Model):
     short_name = models.CharField(max_length=60, blank=True)
     tagline = models.CharField(max_length=220, blank=True)
     description = models.TextField(blank=True)
-    logo = models.ImageField(upload_to='orgs/logos/', blank=True, null=True)
-    cover = models.ImageField(upload_to='orgs/covers/', blank=True, null=True)
+    logo = CloudinaryField('logo', blank=True, null=True, asset_folder='dtc-campus-hub/organizations/logos')
+    cover = CloudinaryField('cover', blank=True, null=True, asset_folder='dtc-campus-hub/organizations/covers')
     contact_email = models.EmailField(blank=True)
     instagram = models.URLField(blank=True)
     linkedin = models.URLField(blank=True)
@@ -79,7 +80,7 @@ class NewsPost(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     excerpt = models.CharField(max_length=320, blank=True)
     content = models.TextField()
-    image = models.ImageField(upload_to='news/', blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True, asset_folder='dtc-campus-hub/news')
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='news_posts')
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, blank=True, related_name='news')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
@@ -98,7 +99,7 @@ class Event(models.Model):
     title = models.CharField(max_length=220)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
-    poster = models.ImageField(upload_to='events/', blank=True, null=True)
+    poster = CloudinaryField('poster', blank=True, null=True, asset_folder='dtc-campus-hub/events')
     organizer = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, blank=True)
     venue = models.CharField(max_length=220)
     starts_at = models.DateTimeField()
@@ -123,7 +124,7 @@ class MediaItem(models.Model):
     class Kinds(models.TextChoices): PHOTO='PHOTO','Photo'; VIDEO='VIDEO','Video'
     organization=models.ForeignKey(Organization,on_delete=models.CASCADE,related_name='media')
     title=models.CharField(max_length=160)
-    image=models.ImageField(upload_to='gallery/',blank=True,null=True)
+    image=CloudinaryField('image',blank=True,null=True,asset_folder='dtc-campus-hub/gallery')
     video_url=models.URLField(blank=True)
     caption=models.CharField(max_length=300,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -156,14 +157,14 @@ class Cafe(models.Model):
     opening_hours=models.CharField(max_length=120,blank=True)
     menu=models.TextField(blank=True)
     prices=models.TextField(blank=True)
-    image=models.ImageField(upload_to='cafeteria/',blank=True,null=True)
+    image=CloudinaryField('image',blank=True,null=True,asset_folder='dtc-campus-hub/cafeteria')
     is_mess=models.BooleanField(default=False)
 
 class Sport(models.Model):
     name=models.CharField(max_length=100)
     team=models.CharField(max_length=160,blank=True)
     description=models.TextField(blank=True)
-    image=models.ImageField(upload_to='sports/',blank=True,null=True)
+    image=CloudinaryField('image',blank=True,null=True,asset_folder='dtc-campus-hub/sports')
 
 class Match(models.Model):
     sport=models.ForeignKey(Sport,on_delete=models.CASCADE,related_name='matches')
