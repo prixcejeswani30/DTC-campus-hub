@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def handle(self,*args,**kwargs):
         admin,created=User.objects.get_or_create(email='admin@dtc.ac.in',defaults={'first_name':'DTC','last_name':'Admin','role':'SUPER_ADMIN'})
         demo_password=os.getenv('DEMO_ADMIN_PASSWORD')
-        if created and demo_password:
+        if demo_password:
             admin.set_password(demo_password)
         admin.role='SUPER_ADMIN'
         admin.is_staff=True
