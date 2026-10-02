@@ -5,7 +5,7 @@ from django.db.models import Q, Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from .forms import SignupForm, LoginForm, NewsForm, EventForm, AcademicForm, MediaForm
+from .forms import SignupForm, LoginForm, NewsForm, EventForm, AcademicForm, MediaForm, CafeForm, SportForm, MatchForm
 from .models import *
 
 
@@ -110,13 +110,52 @@ def org_add_event(request,slug):
         e=form.save(commit=False); e.organizer=org; e.save(); messages.success(request,'Event created.'); return redirect('org_manage',slug=slug)
     return render(request,'core/simple_form.html',{'form':form,'title':f'Create event — {org.name}'})
 
+
+PAGE_MODELS = {'news': NewsPost, 'events': Event, 'academics': AcademicResource, 'campus': Cafe, 'sports': Sport}
+
+def can_manage_page(request, page):
+    return request.user.is_authenticated and (request.user.role == 'SUPER_ADMIN' or PageAdmin.objects.filter(user=request.user, page=page.upper()).exists())
+
+def page_editor_context(request, page):
+    if not can_manage_page(request,page): return {'can_manage_page':False,'page_key':page}
+    if page=='news': items=NewsPost.objects.order_by('-created_at')[:30]; form=NewsForm(); forms=[(x,NewsForm(instance=x)) for x in items]
+    elif page=='events': items=Event.objects.order_by('-starts_at')[:30]; form=EventForm(); forms=[(x,EventForm(instance=x)) for x in items]
+    elif page=='academics': items=AcademicResource.objects.order_by('-published_at')[:40]; form=AcademicForm(); forms=[(x,AcademicForm(instance=x)) for x in items]
+    elif page=='campus': items=Cafe.objects.order_by('is_mess','name')[:40]; form=CafeForm(); forms=[(x,CafeForm(instance=x)) for x in items]
+    else: items=Sport.objects.order_by('name')[:30]; form=SportForm(); forms=[(x,SportForm(instance=x)) for x in items]
+    return {'can_manage_page':True,'page_key':page,'page_editor_title':f'{page.title()} editor','page_editor_form':form,'page_editor_items':forms}
+
+@login_required
+def page_save(request,page):
+    if request.method!='POST' or not can_manage_page(request,page): raise Http404
+    kind=request.POST.get('kind'); pk=request.POST.get('pk') or None
+    cfg={'news':(NewsPost,NewsForm,'news'),'event':(Event,EventForm,'events'),'academic':(AcademicResource,AcademicForm,'academics'),'cafe':(Cafe,CafeForm,'campus'),'sport':(Sport,SportForm,'sports')}
+    if kind not in cfg or cfg[kind][2]!=page: raise Http404
+    model,Form,_=cfg[kind]; obj=get_object_or_404(model,pk=pk) if pk else None
+    form=Form(request.POST,request.FILES,instance=obj)
+    if form.is_valid():
+        item=form.save(commit=False)
+        if kind=='news': item.author=request.user; item.status='PUBLISHED'; item.published_at=item.published_at or timezone.now()
+        item.save(); messages.success(request,'Changes saved.')
+    else: messages.error(request,'Please check the editor fields.')
+    return redirect(request.META.get('HTTP_REFERER',f'/{page}/'))
+
+@login_required
+def page_delete(request,page):
+    if request.method!='POST' or not can_manage_page(request,page): raise Http404
+    cfg={'news':NewsPost,'event':Event,'academic':AcademicResource,'cafe':Cafe,'sport':Sport}; kind=request.POST.get('kind')
+    expected={'news':'news','event':'events','academic':'academics','cafe':'campus','sport':'sports'}
+    if kind not in cfg or expected[kind]!=page: raise Http404
+    get_object_or_404(cfg[kind],pk=request.POST.get('pk')).delete(); messages.success(request,'Deleted.'); return redirect(request.META.get('HTTP_REFERER',f'/{page}/'))
+
 def news(request):
     q=request.GET.get('q','').strip(); items=NewsPost.objects.filter(status='PUBLISHED')
     if q: items=items.filter(Q(title__icontains=q)|Q(content__icontains=q)|Q(excerpt__icontains=q))
-    return render(request,'news/list.html',{'items':items,'q':q})
+    context={'items':items,'q':q}; context.update(page_editor_context(request,'news')); return render(request,'news/list.html',context)
 def news_detail(request,slug): return render(request,'news/detail.html',{'item':get_object_or_404(NewsPost,slug=slug,status='PUBLISHED')})
 
-def events(request): return render(request,'events/list.html',{'events':Event.objects.select_related('organizer').order_by('starts_at')})
+def events(request):
+    context={'events':Event.objects.select_related('organizer').order_by('starts_at')}; context.update(page_editor_context(request,'events')); return render(request,'events/list.html',context)
 def event_detail(request,slug): return render(request,'events/detail.html',{'event':get_object_or_404(Event,slug=slug)})
 @login_required
 def register_event(request,slug):
@@ -128,7 +167,9 @@ def academics(request):
     university=request.GET.get('university','GGSIPU'); rtype=request.GET.get('type','')
     resources=AcademicResource.objects.filter(university=university)
     if rtype: resources=resources.filter(resource_type=rtype)
-    return render(request,'academics/index.html',{'resources':resources,'university':university,'rtype':rtype})
+    context={'resources':resources,'university':university,'rtype':rtype}; context.update(page_editor_context(request,'academics')); return render(request,'academics/index.html',context)
 
-def campus(request): return render(request,'campus/index.html',{'cafes':Cafe.objects.filter(is_mess=False),'mess':Cafe.objects.filter(is_mess=True)})
-def sports(request): return render(request,'sports/index.html',{'sports':Sport.objects.prefetch_related('matches')})
+def campus(request):
+    context={'cafes':Cafe.objects.filter(is_mess=False),'mess':Cafe.objects.filter(is_mess=True)}; context.update(page_editor_context(request,'campus')); return render(request,'campus/index.html',context)
+def sports(request):
+    context={'sports':Sport.objects.prefetch_related('matches')}; context.update(page_editor_context(request,'sports')); return render(request,'sports/index.html',context)
