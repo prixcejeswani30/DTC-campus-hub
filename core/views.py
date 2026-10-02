@@ -122,14 +122,17 @@ def page_editor_context(request, page):
     elif page=='events': items=Event.objects.order_by('-starts_at')[:30]; form=EventForm(); forms=[(x,EventForm(instance=x)) for x in items]
     elif page=='academics': items=AcademicResource.objects.order_by('-published_at')[:40]; form=AcademicForm(); forms=[(x,AcademicForm(instance=x)) for x in items]
     elif page=='campus': items=Cafe.objects.order_by('is_mess','name')[:40]; form=CafeForm(); forms=[(x,CafeForm(instance=x)) for x in items]
-    else: items=Sport.objects.order_by('name')[:30]; form=SportForm(); forms=[(x,SportForm(instance=x)) for x in items]
+    else:
+        items=Sport.objects.order_by('name')[:30]
+        form=SportForm()
+        forms=[(x,SportForm(instance=x)) for x in items]
     return {'can_manage_page':True,'page_key':page,'page_editor_title':f'{page.title()} editor','page_editor_form':form,'page_editor_items':forms}
 
 @login_required
 def page_save(request,page):
     if request.method!='POST' or not can_manage_page(request,page): raise Http404
     kind=request.POST.get('kind'); pk=request.POST.get('pk') or None
-    cfg={'news':(NewsPost,NewsForm,'news'),'event':(Event,EventForm,'events'),'academic':(AcademicResource,AcademicForm,'academics'),'cafe':(Cafe,CafeForm,'campus'),'sport':(Sport,SportForm,'sports')}
+    cfg={'news':(NewsPost,NewsForm,'news'),'event':(Event,EventForm,'events'),'academic':(AcademicResource,AcademicForm,'academics'),'cafe':(Cafe,CafeForm,'campus'),'sport':(Sport,SportForm,'sports'),'match':(Match,MatchForm,'sports')}
     if kind not in cfg or cfg[kind][2]!=page: raise Http404
     model,Form,_=cfg[kind]; obj=get_object_or_404(model,pk=pk) if pk else None
     form=Form(request.POST,request.FILES,instance=obj)
@@ -143,8 +146,8 @@ def page_save(request,page):
 @login_required
 def page_delete(request,page):
     if request.method!='POST' or not can_manage_page(request,page): raise Http404
-    cfg={'news':NewsPost,'event':Event,'academic':AcademicResource,'cafe':Cafe,'sport':Sport}; kind=request.POST.get('kind')
-    expected={'news':'news','event':'events','academic':'academics','cafe':'campus','sport':'sports'}
+    cfg={'news':NewsPost,'event':Event,'academic':AcademicResource,'cafe':Cafe,'sport':Sport,'match':Match}; kind=request.POST.get('kind')
+    expected={'news':'news','event':'events','academic':'academics','cafe':'campus','sport':'sports','match':'sports'}
     if kind not in cfg or expected[kind]!=page: raise Http404
     get_object_or_404(cfg[kind],pk=request.POST.get('pk')).delete(); messages.success(request,'Deleted.'); return redirect(request.META.get('HTTP_REFERER',f'/{page}/'))
 
@@ -172,4 +175,8 @@ def academics(request):
 def campus(request):
     context={'cafes':Cafe.objects.filter(is_mess=False),'mess':Cafe.objects.filter(is_mess=True)}; context.update(page_editor_context(request,'campus')); return render(request,'campus/index.html',context)
 def sports(request):
-    context={'sports':Sport.objects.prefetch_related('matches')}; context.update(page_editor_context(request,'sports')); return render(request,'sports/index.html',context)
+    context={'sports':Sport.objects.prefetch_related('matches'),'match_form':MatchForm()}
+    context.update(page_editor_context(request,'sports'))
+    if context.get('can_manage_page'):
+        context['match_items']=[(m,MatchForm(instance=m)) for m in Match.objects.select_related('sport').order_by('starts_at')[:50]]
+    return render(request,'sports/index.html',context)
