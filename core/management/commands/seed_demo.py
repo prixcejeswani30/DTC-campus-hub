@@ -7,7 +7,11 @@ class Command(BaseCommand):
     help='Seed DTC Campus Hub with demo data'
     def handle(self,*args,**kwargs):
         admin,created=User.objects.get_or_create(email='admin@dtc.ac.in',defaults={'first_name':'DTC','last_name':'Admin','role':'SUPER_ADMIN'})
-        if created: admin.set_password('Admin@123'); admin.save()
+if created: admin.set_password('Admin@123')
+admin.role='SUPER_ADMIN'
+admin.is_staff=True
+admin.is_superuser=True
+admin.save()
         technical=[
             ('ACE DTC','The ACE DTC | Blockchain | AR/VR','Blockchain, AR/VR'),('AIR DTC','AI Renaissance DTC | AI | ML','AI, ML'),('CESTA DTC','DSA & CP | Gaming | IoT | Defence','DSA, CP, Gaming, IoT'),('E-Cell DTC','Entrepreneurship & Innovation','Entrepreneurship'),('FOSS DTC','Open Source | Cybersecurity','Open Source, Cybersecurity'),('GDG DTC','Google Technologies | Google Cloud | Android','Google Technologies'),('GFG DTC','GeeksforGeeks Campus Body','DSA, Development'),('INDUS RISE DTC','Entrepreneurship, Innovation & Community','Entrepreneurship')]
         cultural=[('Aavansh DTC','The Dramatics Society - DTC','Dramatics'),('Ameya DTC','The Dance Society - DTC','Dance'),('Artistia DTC','Fine Arts Society - DTC','Fine Arts'),('Awaaz DTC','The Publication Society - DTC | Debate & Poetry','Literature, Debate'),('Conchord DTC','The Music Club - DTC','Music'),('IBTIDAA DTC','The Cultural Council DTC','Cultural'),('Tasveer DTC','The Photography Club - DTC','Photography')]
