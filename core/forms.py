@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from cloudinary.forms import CloudinaryFileField
-from .models import User, NewsPost, Event, AcademicResource, MediaItem
+from .models import User, NewsPost, Event, AcademicResource, MediaItem, Cafe, Sport, Match
 
 class SignupForm(forms.ModelForm):
     password=forms.CharField(widget=forms.PasswordInput)
@@ -39,3 +39,20 @@ class AcademicForm(forms.ModelForm):
 class MediaForm(forms.ModelForm):
     image=CloudinaryFileField(options={'tags':'dtc_gallery','quality':'auto','fetch_format':'auto','width':1800,'height':1200,'crop':'limit'})
     class Meta: model=MediaItem; fields=['title','image','video_url','caption']
+
+
+class CafeForm(forms.ModelForm):
+    class Meta:
+        model=Cafe
+        fields=['name','location','opening_hours','menu','prices','image','is_mess']
+
+class SportForm(forms.ModelForm):
+    class Meta:
+        model=Sport
+        fields=['name','team','description','image']
+
+class MatchForm(forms.ModelForm):
+    class Meta:
+        model=Match
+        fields=['sport','opponent','venue','starts_at','tournament','result','registration_url','notice']
+        widgets={'starts_at':forms.DateTimeInput(attrs={'type':'datetime-local'})}
