@@ -176,6 +176,20 @@ class Match(models.Model):
     registration_url=models.URLField(blank=True)
     notice=models.TextField(blank=True)
 
+class PageAdmin(models.Model):
+    class Pages(models.TextChoices):
+        NEWS='NEWS','News'
+        EVENTS='EVENTS','Events'
+        ACADEMICS='ACADEMICS','Academics'
+        CAMPUS='CAMPUS','Campus Life'
+        SPORTS='SPORTS','Sports'
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name='page_admin_assignments')
+    page=models.CharField(max_length=20,choices=Pages.choices)
+    created_at=models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together=('user','page')
+        ordering=['page','user__email']
+
 class SiteSetting(models.Model):
     key=models.CharField(max_length=80,unique=True)
     value=models.TextField(blank=True)
