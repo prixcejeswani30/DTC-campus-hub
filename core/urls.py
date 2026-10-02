@@ -10,4 +10,5 @@ urlpatterns=[
  path('news/',views.news,name='news'), path('news/<slug:slug>/',views.news_detail,name='news_detail'),
  path('events/',views.events,name='events'), path('events/<slug:slug>/',views.event_detail,name='event_detail'), path('events/<slug:slug>/register/',views.register_event,name='register_event'),
  path('academics/',views.academics,name='academics'), path('campus/',views.campus,name='campus'), path('sports/',views.sports,name='sports'),
+ path('page/<slug:page>/save/',views.page_save,name='page_save'), path('page/<slug:page>/delete/',views.page_delete,name='page_delete'),
 ]
