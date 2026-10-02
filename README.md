@@ -2,30 +2,54 @@
 
 A media-first campus platform for Delhi Technical Campus, built for the HackIndia Pixel to Product hackathon.
 
+## Hackathon track
+DTC Campus Hub is designed for the **Your Media-Savvy Startup** track. Cloudinary is a core part of the product's media workflow, not just static hosting.
+
 ## Stack
 - Django + PostgreSQL (SQLite automatically used locally if DATABASE_URL is absent)
 - HTML/CSS/JavaScript frontend
 - Django authentication + role system
 - Django admin for super-admin content control
+- Cloudinary for campus image uploads, cloud storage, optimization, transformations and delivery
 - Render deployment configuration
 
+## Cloudinary workflow
+User-uploaded campus media is stored through Cloudinary-backed Django fields. The app uses Cloudinary for:
+- organization logos and covers
+- student avatars
+- news images
+- event posters
+- club/society gallery images
+- cafeteria and sports images
+- automatic upload constraints such as quality/format optimization and size limits
+- transformed delivery on news and event pages using resize/crop plus automatic quality and format
+
+The Cloudinary credential is read from the **CLOUDINARY_URL** environment variable. Never commit the credential to GitHub.
+
+### Render setup
+The included render.yaml declares CLOUDINARY_URL as a secret environment variable. In Render, open the service's environment variables and add the Cloudinary environment variable from your Cloudinary account. Keep it private.
+
+### Local setup
+Create a .env file locally if you want to test real Cloudinary uploads:
+CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+
+Do not commit .env.
+
 ## Run locally
-```bash
 python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-# macOS/Linux: source .venv/bin/activate
+Windows: .venv\\Scripts\\activate
+macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py makemigrations core
 python manage.py migrate
 python manage.py seed_demo
 python manage.py runserver
-```
 
 Open http://127.0.0.1:8000
 
 ### Demo super admin
-- Email: `admin@dtc.ac.in`
-- Password: `Admin@123`
+- Email: admin@dtc.ac.in
+- Password: Admin@123
 
 Change this password before any real deployment.
 
@@ -41,7 +65,16 @@ Change this password before any real deployment.
 - Super-admin and organization-scoped community studio
 
 ## Render
-The included `render.yaml` creates a web service + PostgreSQL database. After connecting the repo to Render, deploy from the Blueprint. For production media uploads, use object storage such as Cloudinary or S3 because Render's local filesystem is not intended for permanent user-uploaded media.
+The included render.yaml creates a web service + PostgreSQL database and declares CLOUDINARY_URL as a private secret variable. The build runs Django migrations and collects static files before starting Gunicorn.
 
 ## Before judging
 Replace demo academic resources, event URLs, emails and placeholder community content with your college's verified data. Add official GGSIPU/AKTU logo assets and the real club logos from the student bodies.
+
+## Hackathon submission checklist
+- [ ] Cloudinary environment variable added privately in Render
+- [ ] Test an image upload from the admin/community studio
+- [ ] Confirm the uploaded asset appears in the Cloudinary Media Library
+- [ ] Confirm the website displays the Cloudinary-delivered image
+- [ ] Keep Cloudinary credentials out of GitHub
+- [ ] Record the 2–4 minute demo showing the product and Cloudinary workflow
+- [ ] Include this repository and setup instructions in the submission
