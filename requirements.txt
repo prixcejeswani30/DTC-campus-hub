@@ -4,3 +4,4 @@ whitenoise>=6.9
 psycopg[binary]>=3.2
 python-dotenv>=1.0
 gunicorn>=23.0
+cloudinary>=1.44.0
