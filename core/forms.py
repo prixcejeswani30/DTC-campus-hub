@@ -8,6 +8,12 @@ class SignupForm(forms.ModelForm):
     class Meta:
         model=User
         fields=['first_name','last_name','email','password','university','course','branch','semester']
+    def clean_email(self):
+        email=self.cleaned_data['email'].lower().strip()
+        if not email.endswith('@dtc.ac.in'):
+            raise forms.ValidationError('Use your DTC college email address.')
+        return email
+
     def save(self,commit=True):
         u=super().save(commit=False); u.set_password(self.cleaned_data['password']); u.username=u.email
         if commit: u.save()
