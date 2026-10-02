@@ -1,6 +1,7 @@
 # DTC Campus Hub
 
 A media-first campus platform for Delhi Technical Campus, built for the HackIndia Pixel to Product hackathon.
+https://dtc-campus-hub.onrender.com
 
 ## Hackathon track
 DTC Campus Hub is designed for the **Your Media-Savvy Startup** track. Cloudinary is a core part of the product's media workflow, not just static hosting.
