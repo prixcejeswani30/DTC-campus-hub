@@ -1,13 +1,16 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta
+import os
 from core.models import *
 
 class Command(BaseCommand):
     help='Seed DTC Campus Hub with demo data'
     def handle(self,*args,**kwargs):
         admin,created=User.objects.get_or_create(email='admin@dtc.ac.in',defaults={'first_name':'DTC','last_name':'Admin','role':'SUPER_ADMIN'})
-        if created: admin.set_password('Admin@123')
+        demo_password=os.getenv('DEMO_ADMIN_PASSWORD')
+        if created and demo_password:
+            admin.set_password(demo_password)
         admin.role='SUPER_ADMIN'
         admin.is_staff=True
         admin.is_superuser=True
@@ -31,4 +34,4 @@ class Command(BaseCommand):
         for name in ['Football','Basketball','Cricket','Badminton']:
             sport,_=Sport.objects.get_or_create(name=name,defaults={'team':f'DTC {name} Team','description':f'Upcoming {name} fixtures, results and registration.'})
             Match.objects.get_or_create(sport=sport,opponent='Inter-College XI',venue='DTC Sports Ground',starts_at=timezone.now()+timedelta(days=5),defaults={'tournament':'DTC Inter-College League','registration_url':'https://example.com/register'})
-        self.stdout.write(self.style.SUCCESS('DTC demo data ready. Admin: admin@dtc.ac.in / Admin@123'))
+        self.stdout.write(self.style.SUCCESS('DTC demo data ready. Admin account created/updated; set DEMO_ADMIN_PASSWORD to enable a demo login password.'))
