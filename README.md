@@ -6,6 +6,17 @@ https://dtc-campus-hub.onrender.com
 ## Hackathon track
 DTC Campus Hub is designed for the **Your Media-Savvy Startup** track. Cloudinary is a core part of the product's media workflow, not just static hosting.
 
+## Problem
+
+Campus information is often scattered across different sources such as
+club pages, social media, notices, event announcements and academic
+resources. Students may have to check multiple places to find information
+about clubs, societies, events, academics, sports and campus activities.
+
+DTC Campus Hub addresses this by bringing these campus resources and
+communities together in one centralized platform, while giving authorized
+administrators and club/society teams tools to manage their own content.
+
 ## Stack
 - Django + PostgreSQL (SQLite automatically used locally if DATABASE_URL is absent)
 - HTML/CSS/JavaScript frontend
@@ -49,10 +60,12 @@ python manage.py runserver
 Open http://127.0.0.1:8000
 
 ### Demo super admin
-- Email: admin@dtc.ac.in
-- Password: Admin@123
 
-Change this password before any real deployment.
+The demo super-admin account is created by the `seed_demo` command.
+The password is supplied through the `DEMO_ADMIN_PASSWORD` environment
+variable and is not stored in the repository.
+
+For deployment, set `DEMO_ADMIN_PASSWORD` privately in Render.
 
 ## Main modules
 - Technical clubs: ACE, AIR, CESTA, E-Cell, FOSS, GDG, GFG, INDUS RISE
